@@ -1,21 +1,33 @@
 <?php
 session_start();
-include "../db.php";
+include "db.php";
 
-$users=mysqli_num_rows(mysqli_query($conn,"SELECT * FROM users"));
-$foods=mysqli_num_rows(mysqli_query($conn,"SELECT * FROM foods"));
-$orders=mysqli_num_rows(mysqli_query($conn,"SELECT * FROM orders"));
+if(!isset($_SESSION['user'])){
+header("Location: login.php");
+}
 ?>
 
-<h2>Admin Dashboard</h2>
+<h2>Food Menu</h2>
 
-<p>Total Users: <?php echo $users ?></p>
-<p>Total Foods: <?php echo $foods ?></p>
-<p>Total Orders: <?php echo $orders ?></p>
+<a href="logout.php">Logout</a>
 
-<a href="add_food.php">Add Food</a><br><br>
+<br><br>
 
-<h3>Food List</h3>
+<input type="text" id="search" placeholder="Search food">
+
+<div id="result"></div>
+
+<script>
+
+document.getElementById("search").onkeyup=function(){
+
+fetch("search.php?q="+this.value)
+.then(res=>res.text())
+.then(data=>document.getElementById("result").innerHTML=data);
+
+}
+
+</script>
 
 <?php
 
@@ -23,18 +35,18 @@ $res=mysqli_query($conn,"SELECT * FROM foods");
 
 while($row=mysqli_fetch_assoc($res)){
 
-echo "<p>";
+echo "<p>".$row['name']." - ₹".$row['price'];
 
-echo $row['name']." - ₹".$row['price'];
-
-echo " <a href='edit_food.php?id=".$row['id']."'>Edit</a>";
-
-echo " <a href='delete_food.php?id=".$row['id']."'>Delete</a>";
+echo " <a href='order.php?id=".$row['id']."'>Order</a>";
 
 echo "</p>";
 
 }
-?>
 
-<br>
-<a href="orders.php">View Orders</a>
+if($_SESSION['role']=="admin"){
+
+echo "<br><a href='admin/dashboard.php'>Admin Panel</a>";
+
+}
+
+?>
